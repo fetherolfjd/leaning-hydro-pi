@@ -1,5 +1,7 @@
 # Leaning Hydrometer Manager for Raspberry Pi
 
+[![go-build-and-test](https://github.com/fetherolfjd/leaning-hydro-pi/actions/workflows/go-build-and-test.yml/badge.svg)](https://github.com/fetherolfjd/leaning-hydro-pi/actions/workflows/go-build-and-test.yml)
+
 ## Build
 
 ### Compiling From Non Raspberry Pi
