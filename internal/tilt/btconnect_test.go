@@ -1,11 +1,35 @@
 package tilt
 
 import (
+	"context"
 	mock_ble "leaning-hydro-pi/test/mock"
 	"testing"
 
+	"github.com/go-ble/ble"
+	"github.com/go-ble/ble/linux"
 	"github.com/golang/mock/gomock"
 )
+
+func TestConnect(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	newBtDevice = func(opts ...ble.Option) (*linux.Device, error) {
+		return &linux.Device{HCI: nil, Server: nil}, nil
+	}
+	setBtDevice = func(d ble.Device) {}
+	btScan = func(ctx context.Context, allowDup bool, advHandler ble.AdvHandler, advFilter ble.AdvFilter) error {
+		return nil
+	}
+
+	ctx := context.Background()
+	tdpChan := make(chan *TiltDataPoint)
+	defer close(tdpChan)
+	testErr := Connect(ctx, tdpChan)
+	if testErr != nil {
+		t.Fatalf("Unexpected error from Connect: %v", testErr)
+	}
+}
 
 func TestAdvertisementHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)

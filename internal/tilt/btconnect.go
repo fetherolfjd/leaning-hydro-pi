@@ -41,6 +41,10 @@ type TiltDataPoint struct {
 	Timestamp       time.Time
 }
 
+var newBtDevice = linux.NewDevice
+var setBtDevice = ble.SetDefaultDevice
+var btScan = ble.Scan
+
 var dataPointChan chan *TiltDataPoint
 
 func Connect(ctx context.Context, tdpChan chan *TiltDataPoint) error {
@@ -50,19 +54,14 @@ func Connect(ctx context.Context, tdpChan chan *TiltDataPoint) error {
 	} else {
 		return fmt.Errorf("BLE scanning requires you provide a channel to pass data back")
 	}
-	device, err := linux.NewDeviceWithName("default")
+	device, err := newBtDevice()
 	if err != nil {
 		return fmt.Errorf("unable to get new device: %v", err)
 	}
-	ble.SetDefaultDevice(device)
+	setBtDevice(device)
 	logger.Info("Scanning for BLE advertisements...")
-	ctext := ble.WithSigHandler(context.WithTimeout(ctx, 120*time.Second))
-	scanErr := ble.Scan(ctext, true, advHandler, advFilter)
-	logger.Info("After BLE scanning")
-	if scanErr != nil {
-		return fmt.Errorf("BLE scanning failed: %v", scanErr)
-	}
-	return nil
+
+	return btScan(ctx, true, advHandler, advFilter)
 }
 
 func advHandler(adv ble.Advertisement) {
