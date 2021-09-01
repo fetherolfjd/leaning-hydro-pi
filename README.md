@@ -6,6 +6,19 @@
 
 `env GOOS=linux GOARCH=arm GOARM=7 go build`
 
+## OS Configuration
+
+It's probable that a standard user will not have access to the bluetooth device(s)
+without `root` or `sudo`. To overcome this, we'll add some do `setcap` on the binary:
+
+`sudo setcap 'cap_net_raw,cap_net_admin+eip' /absolute/path/to/leaning-hydro-pi`
+
+### Dependencies
+
+This requires bluetooth packages:
+
+`sudo apt-get install bluetooth`
+
 ## Resources
 
 ### Tilt Hydrometer iBeacon Data Format
@@ -63,18 +76,17 @@ C5: TX power in dBm
 C7: RSSI in dBm
 ```
 
-Tilt Hydrometer UUIDs by color:
+| Color | Address |
+| ----- | ------- |
+| Red |    A495BB10C5B14B44B5121370F02D74DE |
+| Green |  A495BB20C5B14B44B5121370F02D74DE |
+| Black |  A495BB30C5B14B44B5121370F02D74DE |
+| Purple | A495BB40C5B14B44B5121370F02D74DE |
+| Orange | A495BB50C5B14B44B5121370F02D74DE |
+| Blue |   A495BB60C5B14B44B5121370F02D74DE |
+| Yellow | A495BB70C5B14B44B5121370F02D74DE |
+| Pink |   A495BB80C5B14B44B5121370F02D74DE |
 
-```
-Red:    A495BB10C5B14B44B5121370F02D74DE
-Green:  A495BB20C5B14B44B5121370F02D74DE
-Black:  A495BB30C5B14B44B5121370F02D74DE
-Purple: A495BB40C5B14B44B5121370F02D74DE
-Orange: A495BB50C5B14B44B5121370F02D74DE
-Blue:   A495BB60C5B14B44B5121370F02D74DE
-Yellow: A495BB70C5B14B44B5121370F02D74DE
-Pink:   A495BB80C5B14B44B5121370F02D74DE
-```
 
 ### Links
 
