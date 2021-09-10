@@ -21,6 +21,12 @@ This requires bluetooth packages:
 
 `sudo apt-get install bluetooth`
 
+## Tested Devices
+
+So far this has been developed and tested with the following Raspberry Pi models:
+
+ - Raspberry Pi 3 Model B
+
 ## Resources
 
 ### Tilt Hydrometer iBeacon Data Format
