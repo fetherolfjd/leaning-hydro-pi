@@ -14,17 +14,26 @@ import (
 	"github.com/google/logger"
 )
 
-var verbose = flag.Bool("verbose", false, "print info level logs to stdout")
-
 func main() {
+	var logFile string
+	var logPath string
+	var verbose bool
+
+	flag.BoolVar(&verbose, "verbose", false, "Print 'Info' level logs to stdout")
+	flag.StringVar(&logFile, "logfile", "", "Name of logfile to write data to")
+	flag.StringVar(&logPath, "logpath", ".", "Path of location to write log file to. Default is current directory")
 	flag.Parse()
 
-	defer logger.Init("LeaningHydroPiLogger", *verbose, false, ioutil.Discard).Close()
+	if logFile == "" {
+		logger.Fatal("Must provide value for flag '-logfile'")
+	}
+
+	defer logger.Init("LeaningHydroPiLogger", verbose, false, ioutil.Discard).Close()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	tdpChan := make(chan *tilt.TiltDataPoint)
 
-	publisher := publish.NewCsvPublisher(".", "tilt-log")
+	publisher := publish.NewCsvPublisher(logPath, logFile)
 	defer publisher.Close()
 
 	go func() {
