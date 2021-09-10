@@ -2,8 +2,9 @@ package tilt
 
 import (
 	"context"
-	mock_ble "leaning-hydro-pi/test/mock"
 	"testing"
+
+	mock_ble "github.com/fetherolfjd/leaning-hydro-pi/test/mock"
 
 	"github.com/go-ble/ble"
 	"github.com/go-ble/ble/linux"

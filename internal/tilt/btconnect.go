@@ -2,6 +2,7 @@ package tilt
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -39,6 +40,23 @@ type TiltDataPoint struct {
 	Address         string
 	Color           string
 	Timestamp       time.Time
+}
+
+func (tdp *TiltDataPoint) StrVals() []string {
+	return []string{
+		fmt.Sprintf("%d", tdp.Timestamp.UnixMilli()),
+		tdp.Color,
+		tdp.UUID,
+		tdp.Address,
+		fmt.Sprintf("%1.4f", tdp.SpecificGravity),
+		fmt.Sprintf("%.1f", tdp.Temperature),
+		fmt.Sprintf("%d", tdp.RSSI),
+		fmt.Sprintf("%d", tdp.TXPower),
+	}
+}
+
+func (tdp *TiltDataPoint) ToJson() ([]byte, error) {
+	return json.Marshal(tdp)
 }
 
 var newBtDevice = linux.NewDevice
