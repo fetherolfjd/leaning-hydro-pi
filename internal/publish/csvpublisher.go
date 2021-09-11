@@ -25,7 +25,7 @@ func (p *CsvPublisher) Publish(tdp *tilt.TiltDataPoint) {
 
 func (p *CsvPublisher) PublishAll(tdps []*tilt.TiltDataPoint) {
 	logger.Infof("Writing %d records to file %s", len(tdps), p.csvFile.Name())
-	data := make([][]string, len(tdps))
+	data := make([][]string, 0, len(tdps))
 	for _, tdp := range tdps {
 		data = append(data, tdp.StrVals())
 	}

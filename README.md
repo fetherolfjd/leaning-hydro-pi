@@ -6,7 +6,13 @@
 
 ### Compiling From Non Raspberry Pi
 
+For Raspberry Pi 3 B:
+
 `env GOOS=linux GOARCH=arm GOARM=7 go build`
+
+For Raspberry Pi Zero W:
+
+`env GOOS=linux GOARCH=arm GOARM=6 go build`
 
 ## OS Configuration
 
@@ -26,6 +32,7 @@ This requires bluetooth packages:
 So far this has been developed and tested with the following Raspberry Pi models:
 
  - Raspberry Pi 3 Model B
+ - Raspberry Pi Zero W
 
 ## Resources
 
