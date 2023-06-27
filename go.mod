@@ -1,10 +1,9 @@
 module github.com/fetherolfjd/leaning-hydro-pi
 
-go 1.17
+go 1.20
 
 require (
 	github.com/go-ble/ble v0.0.0-20210519192345-b055c211937b
-	github.com/golang/mock v1.6.0
 	github.com/hashicorp/go-hclog v1.5.0
 	github.com/stretchr/testify v1.8.4
 )
