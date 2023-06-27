@@ -1,147 +1,89 @@
-package tilt
+package tilt_test
 
 import (
-	"encoding/hex"
 	"testing"
+
+	"github.com/fetherolfjd/leaning-hydro-pi/internal/tilt"
+	"github.com/hashicorp/go-hclog"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestDecodeTemperatureWithArrayTooShort(t *testing.T) {
-	temp, err := decodeTemperature(nil)
-	if temp != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
+func TestDecoder(t *testing.T) {
 
-	var testSlice []byte
-	temp, err = decodeTemperature(testSlice)
-	if temp != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
+	t.Run("Temperature", func(t *testing.T) {
+		d := tilt.Decoder{
+			Logger: hclog.NewNullLogger(),
+		}
+		temp, err := d.Temperature(nil)
+		assert.Equal(t, float32(0.0), temp)
+		assert.Error(t, err)
 
-	testSlice = make([]byte, 0)
-	temp, err = decodeTemperature(testSlice)
-	if temp != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
+		badData := getBadTestData(t)
+		temp, err = d.Temperature(badData[:6])
+		assert.Equal(t, float32(0.0), temp)
+		assert.Error(t, err)
 
-	testSlice = []byte{}
-	temp, err = decodeTemperature(testSlice)
-	if temp != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
+		goodData := getTestData(t)
+		temp, err = d.Temperature(goodData)
+		assert.Equal(t, float32(68.0), temp)
+		assert.NoError(t, err)
+	})
 
-	s := "4C000215"
-	testSlice, decodeErr := hex.DecodeString(s)
-	if decodeErr != nil {
-		t.Fatal("Failed to decode test hex string")
-	}
-	temp, err = decodeTemperature(testSlice)
-	if temp != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
-}
+	t.Run("SpecificGravity", func(t *testing.T) {
+		d := tilt.Decoder{
+			Logger: hclog.NewNullLogger(),
+		}
+		sg, err := d.SpecificGravity(nil)
+		assert.Equal(t, float32(0.0), sg)
+		assert.Error(t, err)
 
-func TestDecodeTemperature(t *testing.T) {
-	data := getTestData()
-	temp, err := decodeTemperature(data)
-	expectedTemp := 68.0
-	if temp != float32(expectedTemp) || err != nil {
-		t.Fatalf("Extracted temperature %f not match expected temperature %f", temp, expectedTemp)
-	}
-}
+		badData := getBadTestData(t)
+		sg, err = d.SpecificGravity(badData[:6])
+		assert.Equal(t, float32(0.0), sg)
+		assert.Error(t, err)
 
-func TestDecodeSpecificGravityWithArrayTooShort(t *testing.T) {
-	sg, err := decodeSpecificGravity(nil)
-	if sg != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
+		goodData := getTestData(t)
+		sg, err = d.SpecificGravity(goodData)
+		assert.Equal(t, float32(1.016), sg)
+		assert.NoError(t, err)
+	})
 
-	var testSlice []byte
-	sg, err = decodeSpecificGravity(testSlice)
-	if sg != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
+	t.Run("TransmitPower", func(t *testing.T) {
+		d := tilt.Decoder{
+			Logger: hclog.NewNullLogger(),
+		}
+		tx, err := d.TransmitPower(nil)
+		assert.Equal(t, 0, tx)
+		assert.Error(t, err)
 
-	testSlice = make([]byte, 0)
-	sg, err = decodeSpecificGravity(testSlice)
-	if sg != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
+		badData := getBadTestData(t)
+		tx, err = d.TransmitPower(badData[:6])
+		assert.Equal(t, 0, tx)
+		assert.Error(t, err)
 
-	testSlice = []byte{}
-	sg, err = decodeSpecificGravity(testSlice)
-	if sg != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
+		goodData := getTestData(t)
+		tx, err = d.TransmitPower(goodData)
+		assert.Equal(t, 197, tx)
+		assert.NoError(t, err)
+	})
 
-	s := "4C000215"
-	testSlice, decodeErr := hex.DecodeString(s)
-	if decodeErr != nil {
-		t.Fatal("Failed to decode test hex string")
-	}
-	sg, err = decodeSpecificGravity(testSlice)
-	if sg != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
-}
+	t.Run("DeviceUUID", func(t *testing.T) {
+		d := tilt.Decoder{
+			Logger: hclog.NewNullLogger(),
+		}
+		uuid, err := d.DeviceUUID(nil)
+		assert.Equal(t, "", uuid)
+		assert.Error(t, err)
 
-func TestDecodeSpecificGravity(t *testing.T) {
-	data := getTestData()
-	expectedSg := 1.016
-	sg, err := decodeSpecificGravity(data)
-	if sg != float32(expectedSg) || err != nil {
-		t.Fatalf("Extracted specific gravity %f does not match expected specific gravity %f", sg, expectedSg)
-	}
-}
+		badData := getBadTestData(t)
+		uuid, err = d.DeviceUUID(badData[:6])
+		assert.Equal(t, "", uuid)
+		assert.Error(t, err)
 
-func TestDecodeTransmitPowerWithArrayTooShort(t *testing.T) {
-	tx, err := decodeTransmitPower(nil)
-	if tx != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
+		goodData := getTestData(t)
+		uuid, err = d.DeviceUUID(goodData)
+		assert.Equal(t, "A495BB10C5B14B44B5121370F02D74DE", uuid)
+		assert.NoError(t, err)
+	})
 
-	var testSlice []byte
-	tx, err = decodeTransmitPower(testSlice)
-	if tx != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
-
-	testSlice = make([]byte, 0)
-	tx, err = decodeTransmitPower(testSlice)
-	if tx != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
-
-	testSlice = []byte{}
-	tx, err = decodeTransmitPower(testSlice)
-	if tx != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
-
-	s := "4C000215"
-	testSlice, decodeErr := hex.DecodeString(s)
-	if decodeErr != nil {
-		t.Fatal("Failed to decode test hex string")
-	}
-	tx, err = decodeTransmitPower(testSlice)
-	if tx != 0.0 || err == nil {
-		t.Fatalf("Empty slice did not fail")
-	}
-}
-
-func TestDecodeTransmitPower(t *testing.T) {
-	data := getTestData()
-	expectedTx := 197
-	tx, err := decodeTransmitPower(data)
-	if tx != expectedTx || err != nil {
-		t.Fatalf("Extracted transmit power %d does not match expected transmit power %d", tx, expectedTx)
-	}
-}
-
-func TestDecodeTiltUUID(t *testing.T) {
-	data := getTestData()
-	want := "A495BB10C5B14B44B5121370F02D74DE"
-	uuid, err := decodeDeviceUUID(data)
-	if uuid != want || err != nil {
-		t.Fatalf("Extracted device UUID %s does not match expected device UUID %s", uuid, want)
-	}
 }

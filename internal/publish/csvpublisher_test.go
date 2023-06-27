@@ -2,134 +2,54 @@ package publish
 
 import (
 	"encoding/csv"
-	"math/rand"
 	"os"
-	"path/filepath"
+	"path"
 	"testing"
 	"time"
 
-	"github.com/fetherolfjd/leaning-hydro-pi/internal/tilt"
-	"github.com/google/uuid"
+	"github.com/fetherolfjd/leaning-hydro-pi/internal/model"
+	"github.com/hashicorp/go-hclog"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestSingleValues(t *testing.T) {
-	path := "/tmp"
-	filename := "single-test"
-	fullPath := filepath.Join(path, filename+".csv")
-	rmFile(fullPath, t)
-	publisher := NewCsvPublisher(path, filename)
+func TestCsvPublisher(t *testing.T) {
 
-	dp := createDataPoint()
-	publisher.Publish(dp)
+	tempDir := t.TempDir()
+	csvFile := path.Join(tempDir, "testfile.csv")
 
-	publisher.Close()
-
-	writtenRecords := readCsv(fullPath, t)
-	compDataPoints([]*tilt.TiltDataPoint{dp}, writtenRecords, t)
-
-	publisher = NewCsvPublisher(path, filename)
-	dp2 := createDataPoint()
-	publisher.Publish(dp2)
-	publisher.Close()
-
-	writtenRecords = readCsv(fullPath, t)
-	compDataPoints([]*tilt.TiltDataPoint{dp, dp2}, writtenRecords, t)
-
-	rmFile(fullPath, t)
-}
-
-func TestMultipleValues(t *testing.T) {
-	path := "/tmp"
-	filename := "multi-test"
-	fullPath := filepath.Join(path, filename+".csv")
-	rmFile(fullPath, t)
-	publisher := NewCsvPublisher(path, filename)
-
-	dps := []*tilt.TiltDataPoint{
-		createDataPoint(),
-		createDataPoint(),
-		createDataPoint(),
-		createDataPoint(),
-		createDataPoint(),
-	}
-	publisher.PublishAll(dps)
-
-	publisher.Close()
-
-	writtenRecords := readCsv(fullPath, t)
-	compDataPoints(dps, writtenRecords, t)
-
-	publisher = NewCsvPublisher(path, filename)
-
-	dps2 := []*tilt.TiltDataPoint{
-		createDataPoint(),
-		createDataPoint(),
-		createDataPoint(),
-		createDataPoint(),
-		createDataPoint(),
-	}
-	publisher.PublishAll(dps2)
-
-	publisher.Close()
-
-	writtenRecords = readCsv(fullPath, t)
-	checkDps := append(dps, dps2...)
-	compDataPoints(checkDps, writtenRecords, t)
-
-	rmFile(fullPath, t)
-}
-
-func compDataPoints(dps []*tilt.TiltDataPoint, csvData [][]string, t *testing.T) {
-	if len(dps) != len(csvData) {
-		t.Fatalf("Expected datapoint size %d is different than CSV size %d", len(dps), len(csvData))
-	}
-
-	for i := 0; i < len(dps); i++ {
-		currDp := dps[i]
-		currDpAsCsv := currDp.StrVals()
-		currCsv := csvData[i]
-		for j := 0; j < len(currDpAsCsv); j++ {
-			d := currDpAsCsv[j]
-			c := currCsv[j]
-			if d != c {
-				t.Fatalf("Expected value %s does not equal actual %s", d, c)
-			}
-		}
-	}
-}
-
-func rmFile(filePath string, t *testing.T) {
-	if _, err := os.Stat(filePath); err == nil {
-		err := os.Remove(filePath)
-		if err != nil {
-			t.Fatalf("Unable to remove file %s", filePath)
-		}
-	}
-}
-
-func readCsv(filePath string, t *testing.T) [][]string {
-	f, err := os.Open(filePath)
-	if err != nil {
-		t.Fatalf("Unalbe to open file %s", filePath)
-	}
-	defer f.Close()
-	csvReader := csv.NewReader(f)
-	records, err := csvReader.ReadAll()
-	if err != nil {
-		t.Fatalf("Unable to parse file as CSV for %s", filePath)
-	}
-	return records
-}
-
-func createDataPoint() *tilt.TiltDataPoint {
-	return &tilt.TiltDataPoint{
-		UUID:            uuid.NewString(),
+	r := model.TiltReading{
+		UUID:            "test",
+		SpecificGravity: 1,
+		Temperature:     2,
+		RSSI:            3,
+		TXPower:         4,
+		Address:         "testaddr",
+		Color:           "testcolor",
 		Timestamp:       time.Now(),
-		Address:         uuid.NewString(),
-		RSSI:            rand.Int(),
-		TXPower:         rand.Int(),
-		Color:           "RED",
-		SpecificGravity: rand.Float32(),
-		Temperature:     rand.Float32(),
+	}
+	strSli := stringify(r)
+
+	csvPub, err := NewCsvPublisher(csvFile, hclog.NewNullLogger())
+	require.NoError(t, err)
+
+	err = csvPub.Publish(r)
+	require.NoError(t, err)
+
+	err = csvPub.PublishAll([]model.TiltReading{r, r})
+	require.NoError(t, err)
+
+	err = csvPub.Close()
+	require.NoError(t, err)
+
+	csvF, err := os.Open(csvFile)
+	defer csvF.Close()
+	require.NoError(t, err)
+	csvRead := csv.NewReader(csvF)
+	recs, err := csvRead.ReadAll()
+	require.NoError(t, err)
+	assert.Len(t, recs, 3)
+	for _, rec := range recs {
+		assert.Equal(t, strSli, rec)
 	}
 }
