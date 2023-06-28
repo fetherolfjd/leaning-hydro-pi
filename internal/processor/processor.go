@@ -52,7 +52,7 @@ func (p HydroReadings) doPublish() {
 	for uuid, datas := range p.readings {
 		len := len(datas)
 		if len == 0 {
-			p.Logger.Info("no readings to publish for UUID: %s", uuid)
+			p.Logger.Info("no readings to publish", "uuid", uuid)
 			continue
 		} else if len == 1 {
 			p.Logger.Debug("publishing single reading")
@@ -81,7 +81,7 @@ func (p HydroReadings) doPublish() {
 		r.Temperature = avgTemp
 		r.RSSI = avgRSSI
 		r.TXPower = avgTx
-		p.Logger.Debug("publishing averaged data for %d readings", len)
+		p.Logger.Debug("publishing averaged data", "num_readings", len)
 		if err := p.Publisher.Publish(r); err != nil {
 			panic(err)
 		}

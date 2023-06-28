@@ -18,9 +18,16 @@ import (
 func main() {
 	cfg := config.Parse()
 
+	var includeLoc bool
+	logLvl := hclog.LevelFromString(cfg.LogLevel)
+	if logLvl < hclog.Info {
+		includeLoc = true
+	}
+
 	logger := hclog.New(&hclog.LoggerOptions{
-		Name:  "leaning-hydro-pi",
-		Level: hclog.LevelFromString(cfg.LogLevel),
+		Name:            "leaning-hydro-pi",
+		Level:           hclog.LevelFromString(cfg.LogLevel),
+		IncludeLocation: includeLoc,
 	})
 
 	topCtx, cancel := context.WithCancel(context.Background())
@@ -33,7 +40,7 @@ func main() {
 	}
 	defer func() {
 		if cErr := csvPub.Close(); cErr != nil {
-			logger.Error("error closing CSV file: %v", cErr)
+			logger.Error("error closing CSV file", "error", cErr)
 		}
 	}()
 
@@ -65,8 +72,8 @@ func main() {
 	err = bt.Scan(ctx, pktHdlr, pktFilter)
 	cancel()
 	if err != nil {
-		logger.Error("error scanning: %v", err)
+		logger.Error("error scanning", "error", err)
 	}
 
-	logger.Info("Shutting down")
+	logger.Info("shutting down")
 }

@@ -29,7 +29,7 @@ func stringify(r model.TiltReading) []string {
 }
 
 func (p *CsvPublisher) Publish(r model.TiltReading) error {
-	p.logger.Debug("writing a record to file %s", p.csvFile.Name())
+	p.logger.Debug("writing a record", "file", p.csvFile.Name())
 	if err := p.csvWriter.Write(stringify(r)); err != nil {
 		return fmt.Errorf("unable to write to file: %w", err)
 	}
@@ -41,7 +41,7 @@ func (p *CsvPublisher) Publish(r model.TiltReading) error {
 }
 
 func (p *CsvPublisher) PublishAll(rs []model.TiltReading) error {
-	p.logger.Debug("writing %d records to file %s", len(rs), p.csvFile.Name())
+	p.logger.Debug("writing records", "record_count", len(rs), "file", p.csvFile.Name())
 	data := make([][]string, 0, len(rs))
 	for _, r := range rs {
 		data = append(data, stringify(r))
@@ -57,7 +57,7 @@ func (p *CsvPublisher) PublishAll(rs []model.TiltReading) error {
 }
 
 func (p *CsvPublisher) Close() error {
-	p.logger.Debug("Closing publisher for file %s", p.csvFile.Name())
+	p.logger.Debug("closing csv publisher", "file", p.csvFile.Name())
 	p.csvWriter.Flush()
 	if err := p.csvFile.Close(); err != nil {
 		return fmt.Errorf("error closing CSV file %s; %v", p.csvFile.Name(), err)
@@ -66,7 +66,7 @@ func (p *CsvPublisher) Close() error {
 }
 
 func NewCsvPublisher(filePath string, logger hclog.Logger) (*CsvPublisher, error) {
-	logger.Debug("Attempting to open CSV file %s", filePath)
+	logger.Debug("attempting to open CSV file", "file", filePath)
 	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open CSV file: %s; %w", filePath, err)

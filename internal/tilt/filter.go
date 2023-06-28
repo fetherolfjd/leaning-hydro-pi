@@ -17,10 +17,10 @@ type FilterTiltDevices struct {
 func (f FilterTiltDevices) Filter(pkt model.DataPacket) bool {
 	uuid, err := f.Decoder.DeviceUUID(pkt.ManufacturerData)
 	if err != nil {
-		f.Logger.Error("failed to decode UUID: %v", err)
+		f.Logger.Debug("failed to decode UUID", "error", err)
 		return false
 	}
-	f.Logger.Debug("decoded device UUID of: %s", uuid)
+	f.Logger.Debug("decode successful", "uuid", uuid)
 	_, ok := uuidToColor[uuid]
 	return ok
 }

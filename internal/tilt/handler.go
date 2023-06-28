@@ -29,30 +29,30 @@ func (t TransformTiltData) Handle(pkt model.DataPacket) {
 
 	uuid, devUUIDErr := t.Decoder.DeviceUUID(manData)
 	if devUUIDErr != nil {
-		t.Logger.Error("failed to get device ID: %v", devUUIDErr)
+		t.Logger.Error("failed to get device ID", "error", devUUIDErr)
 		return
 	}
 
 	temp, tempErr := t.Decoder.Temperature(manData)
 	if tempErr != nil {
-		t.Logger.Error("failed to get temperature: %v", tempErr)
+		t.Logger.Error("failed to get temperature", "error", tempErr)
 		return
 	}
 
 	sg, sgErr := t.Decoder.SpecificGravity(manData)
 	if sgErr != nil {
-		t.Logger.Error("failed to get specific gravity: %v", sgErr)
+		t.Logger.Error("failed to get specific gravity", "error", sgErr)
 		return
 	}
 
 	txPow, txErr := t.Decoder.TransmitPower(manData)
 	if txErr != nil {
-		t.Logger.Error("failed to get transmit power: %v", txErr)
+		t.Logger.Error("failed to get transmit power", "error", txErr)
 	}
 
 	color, ok := uuidToColor[uuid]
 	if !ok {
-		t.Logger.Error("failed to get color for UUID: %s", uuid)
+		t.Logger.Error("failed to get color for UUID", "uuid", uuid)
 	}
 
 	t.DataCh <- model.TiltReading{
